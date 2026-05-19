@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Myanmar TTS Free</title>
+</head>
+<body>
+
+<h2>Myanmar Text to Speech</h2>
+
+<textarea id="text" rows="8" cols="50" placeholder="မြန်မာစာထည့်ပါ..."></textarea>
+<br><br>
+
+<button onclick="speak()">🔊 Play Voice</button>
+<button onclick="downloadAudio()">⬇ Download MP3</button>
+
+<script>
+let utterance;
+let audioChunks = [];
+
+function speak() {
+  let text = document.getElementById("text").value;
+
+  utterance = new SpeechSynthesisUtterance(text);
+
+  // Myanmar voice (browser support depends)
+  utterance.lang = "my-MM";
+
+  speechSynthesis.speak(utterance);
+}
+
+// MP3 download (record voice output)
+function downloadAudio() {
+  let text = document.getElementById("text").value;
+
+  let utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "my-MM";
+
+  let stream = new MediaStream();
+  let mediaRecorder;
+
+  navigator.mediaDevices.getUserMedia({ audio: true })
+  .then(stream => {
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = e => {
+      audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+      let blob = new Blob(audioChunks, { type: "audio/mp3" });
+      let url = URL.createObjectURL(blob);
+
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = "tts.mp3";
+      a.click();
+    };
+
+    mediaRecorder.start();
+
+    speechSynthesis.speak(utter);
+
+    setTimeout(() => {
+      mediaRecorder.stop();
+    }, 5000);
+  });
+}
+</script>
+
+</body>
+</html>
